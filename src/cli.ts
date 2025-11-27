@@ -115,6 +115,7 @@ async function main(): Promise<void> {
       valid: false,
       errors: [`Failed to read input: ${error?.message ?? String(error)}`],
       warnings: [],
+      issues: [],
       sanitized: false,
     };
     outputSummary(summary, options.jsonOutput);
@@ -134,6 +135,7 @@ async function main(): Promise<void> {
       valid: false,
       errors: ['Could not parse workflow JSON'],
       warnings: [],
+      issues: [],
       sanitized: false,
     };
     outputSummary(summary, options.jsonOutput);
@@ -149,7 +151,8 @@ async function main(): Promise<void> {
     allWarnings.push(...fixResult.warnings);
   }
 
-  const structure = validateWorkflowStructure(parsed);
+  // Pass raw source to validator for line number extraction
+  const structure = validateWorkflowStructure(parsed, { rawSource: raw });
   const allErrors = [...structure.errors];
   allWarnings.push(...structure.warnings);
 
@@ -171,6 +174,7 @@ async function main(): Promise<void> {
     valid: allErrors.length === 0,
     errors: allErrors,
     warnings: allWarnings,
+    issues: structure.issues || [],
     sanitized: structure.valid && options.sanitize,
     fixed: fixedCount > 0 ? fixedCount : undefined,
   };

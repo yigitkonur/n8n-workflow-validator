@@ -1,31 +1,70 @@
 # n8n Workflow Validator
 
-Standalone CLI tool that validates n8n workflow JSON files using the exact same validation logic as the official n8n editor.
+[![npm version](https://img.shields.io/npm/v/n8n-workflow-validator.svg)](https://www.npmjs.com/package/n8n-workflow-validator)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Standalone CLI tool that validates n8n workflow JSON files using the **exact same validation logic** as the official n8n editor.
+
+## Quick Start
+
+```bash
+# No installation needed - use with npx
+npx n8n-workflow-validator workflow.json
+
+# Auto-fix issues
+npx n8n-workflow-validator workflow.json --fix --out fixed.json
+```
 
 ## Installation
 
+### Global Installation
+
 ```bash
+npm install -g n8n-workflow-validator
+n8n-validate workflow.json
+```
+
+### Local Development
+
+```bash
+git clone https://github.com/yigitkonur/n8n-workflow-validator.git
+cd n8n-workflow-validator
 npm install
 npm run build
 ```
 
 ## Usage
 
+### With npx (Recommended)
+
 ```bash
 # Validate a workflow file
-node dist/cli.js workflow.json
+npx n8n-workflow-validator workflow.json
 
 # Auto-fix issues
-node dist/cli.js workflow.json --fix --out fixed.json
+npx n8n-workflow-validator workflow.json --fix --out fixed.json
 
 # From URL
-node dist/cli.js "https://example.com/workflow.json"
+npx n8n-workflow-validator "https://example.com/workflow.json"
 
 # JSON output (for CI/CD)
-node dist/cli.js workflow.json --json
+npx n8n-workflow-validator workflow.json --json
 
 # With repair for malformed JSON
-node dist/cli.js broken.json --repair --fix
+npx n8n-workflow-validator broken.json --repair --fix
+```
+
+### After Global Install
+
+```bash
+n8n-validate workflow.json
+n8n-validate workflow.json --fix --out fixed.json
+```
+
+### From Source
+
+```bash
+node dist/cli.js workflow.json
 ```
 
 ## What It Validates
