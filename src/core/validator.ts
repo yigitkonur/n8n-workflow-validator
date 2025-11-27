@@ -1,4 +1,4 @@
-import type { Workflow, ValidationResult, ValidationIssue, IssueSeverity, SourceLocation, SourceSnippet } from './types.js';
+import type { Workflow, ValidationResult, ValidationIssue, IssueSeverity } from './types.js';
 import { createSourceMap, findSourceLocation, extractSnippet, type SourceMap } from './source-location.js';
 
 // Known valid parameter keys for common problematic nodes (for context, not for fixing)

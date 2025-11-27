@@ -44,14 +44,6 @@ export interface SourceSnippet {
   highlightLine: number;
 }
 
-export interface SuggestedFix {
-  action: 'delete' | 'replace' | 'add' | 'move';
-  description: string;
-  target?: string;          // What to modify (e.g., "line 126" or "parameters.options")
-  before?: string;          // Current state (for replace)
-  after?: string;           // Desired state (for replace/add)
-}
-
 export interface ValidationIssue {
   code: string;
   severity: IssueSeverity;
@@ -63,7 +55,7 @@ export interface ValidationIssue {
     nodeId?: string;
     nodeType?: string;
     nodeIndex?: number;
-    path?: string;            // JSON path like "nodes[4].parameters.options"
+    path?: string;
   };
   
   // Source file location (line/column)
@@ -74,23 +66,17 @@ export interface ValidationIssue {
   
   // Contextual information about the error
   context?: {
-    value?: unknown;          // The actual problematic value
-    expected?: string;        // What was expected
-    n8nError?: string;        // The equivalent n8n runtime error message
-    fullObject?: unknown;     // The full node/object for context (e.g., entire node JSON)
+    value?: unknown;
+    expected?: string;
+    n8nError?: string;
+    fullObject?: unknown;
   };
   
-  // What ARE the valid options (for "invalid option" type errors)
+  // Valid alternatives for the problematic value
   validAlternatives?: string[];
   
-  // How to fix this issue
-  suggestedFix?: SuggestedFix;
-  
-  // Human-readable hint
+  // Additional context hint
   hint?: string;
-  
-  // Documentation reference
-  docsUrl?: string;
 }
 
 export interface ValidationResult {

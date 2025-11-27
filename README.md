@@ -3,140 +3,147 @@
 [![npm version](https://img.shields.io/npm/v/n8n-workflow-validator.svg)](https://www.npmjs.com/package/n8n-workflow-validator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Standalone CLI tool that validates n8n workflow JSON files using the **exact same validation logic** as the official n8n editor.
+Standalone CLI tool that validates n8n workflow JSON files with **rich error diagnostics** including source locations, code snippets, and root cause analysis. Perfect for CI/CD pipelines and LLM-powered self-healing agents.
 
 ## Quick Start
 
 ```bash
-# No installation needed - use with npx
 npx n8n-workflow-validator workflow.json
-
-# Auto-fix issues
 npx n8n-workflow-validator workflow.json --fix --out fixed.json
+npx n8n-workflow-validator workflow.json --json  # For programmatic use
+```
+
+## Rich Error Output
+
+The validator provides detailed, self-contained error reports:
+
+```
+❌ INVALID: workflow.json
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🛑 ERRORS (1)
+
+────────────────────────────────────────────────────────────────────────────────
+[1] INVALID_IF_SWITCH_OPTIONS_ROOT
+    Path: nodes[4].parameters.options
+    Location: Line 129, Column 20
+    Node: "check-document-exists" (n8n-nodes-base.if)
+
+    Message: Found unexpected "options" key at parameters root level.
+
+    Source:
+    ┌──────┬────────────────────────────────────────────────────────────
+    │ 126 │            "typeValidation": "strict"
+    │ 127 │          }
+    │ 128 │        },
+    │ 129 │>>>     "options": {}
+    │ 130 │      },
+    │ 131 │      "id": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c",
+    │ 132 │      "name": "check-document-exists",
+    └──────┴────────────────────────────────────────────────────────────
+
+    Root Cause Analysis:
+      • n8n Runtime Error: "Could not find property option"
+      • Expected: This node type does not define "options" as a root-level parameter.
+      • Found: {}
+
+    Full Context (the problematic object):
+    ```json
+    {
+      "conditions": { "options": {...} },
+      "options": {}
+    }
+    ```
+
+    Valid Alternatives: [conditions, looseTypeValidation]
+
+    Note: Observed parameter keys: [conditions, options]. Known valid keys for
+    n8n-nodes-base.if: [conditions, looseTypeValidation].
+```
+
+## JSON Output for LLMs & Automation
+
+```bash
+npx n8n-workflow-validator workflow.json --json
+```
+
+Returns structured data with all diagnostic information:
+
+```json
+{
+  "valid": false,
+  "issues": [{
+    "code": "INVALID_IF_SWITCH_OPTIONS_ROOT",
+    "severity": "error",
+    "message": "Found unexpected \"options\" key at parameters root level.",
+    "location": {
+      "nodeName": "check-document-exists",
+      "nodeType": "n8n-nodes-base.if",
+      "path": "nodes[4].parameters.options"
+    },
+    "sourceLocation": { "line": 129, "column": 20 },
+    "sourceSnippet": {
+      "lines": [
+        { "lineNumber": 129, "content": "        \"options\": {}", "isHighlighted": true }
+      ]
+    },
+    "context": {
+      "value": {},
+      "n8nError": "Could not find property option",
+      "fullObject": { "conditions": {...}, "options": {} }
+    },
+    "validAlternatives": ["conditions", "looseTypeValidation"]
+  }]
+}
 ```
 
 ## Installation
 
-### Global Installation
-
 ```bash
+# Use directly with npx (no install)
+npx n8n-workflow-validator workflow.json
+
+# Or install globally
 npm install -g n8n-workflow-validator
 n8n-validate workflow.json
 ```
 
-### Local Development
+## Options
 
-```bash
-git clone https://github.com/yigitkonur/n8n-workflow-validator.git
-cd n8n-workflow-validator
-npm install
-npm run build
-```
-
-## Usage
-
-### With npx (Recommended)
-
-```bash
-# Validate a workflow file
-npx n8n-workflow-validator workflow.json
-
-# Auto-fix issues
-npx n8n-workflow-validator workflow.json --fix --out fixed.json
-
-# From URL
-npx n8n-workflow-validator "https://example.com/workflow.json"
-
-# JSON output (for CI/CD)
-npx n8n-workflow-validator workflow.json --json
-
-# With repair for malformed JSON
-npx n8n-workflow-validator broken.json --repair --fix
-```
-
-### After Global Install
-
-```bash
-n8n-validate workflow.json
-n8n-validate workflow.json --fix --out fixed.json
-```
-
-### From Source
-
-```bash
-node dist/cli.js workflow.json
-```
+| Option | Description |
+|--------|-------------|
+| `--fix` | Auto-fix known issues |
+| `--json` | JSON output for programmatic use |
+| `--out FILE` | Write fixed workflow to FILE |
+| `--repair` | Repair malformed JSON |
+| `--no-sanitize` | Skip sanitization |
+| `-h, --help` | Show help |
 
 ## What It Validates
 
-Mirrors n8n's 4-stage import validation pipeline:
-
-1. **JSON Parsing** - 3-tier fallback (standard → JS object → repair)
-2. **Structure** - nodes array + connections object
-3. **Node Fields** - type, typeVersion, position, parameters
-4. **Known Issues** - Invalid `options` fields in IF/Switch nodes
-
-## What It Fixes
-
-- ✅ Invalid empty `options` field in IF/Switch nodes (causes "Could not find property option" error)
-- ✅ Missing node names (auto-generated)
-- ✅ Duplicate webhookIds (regenerated)
-- ✅ Missing/duplicate node IDs (regenerated)
-
-## Options
-
-```
---repair             Repair malformed JSON using jsonrepair
---accept-js-object   Accept JavaScript object literals
---fix                Auto-fix known issues
---no-sanitize        Skip name/ID generation
---no-regenerate-ids  Keep existing IDs
---json               JSON output
---out FILE           Write fixed workflow to FILE
--h, --help           Show help
-```
+- **Structure**: `nodes` array, `connections` object
+- **Node fields**: `type`, `typeVersion`, `position`, `parameters`
+- **Known issues**: Invalid `options` in IF/Switch nodes
 
 ## Exit Codes
 
-- `0` - Valid
-- `1` - Invalid or errors
+- `0` = Valid
+- `1` = Invalid
 
-## Architecture
+## API Usage
 
-```
-src/
-├── core/
-│   ├── json-parser.ts   # 3-tier JSON parsing (from n8n-workflow)
-│   ├── types.ts         # TypeScript interfaces
-│   ├── validator.ts     # Structure validation (from workflows.controller.ts)
-│   ├── fixer.ts         # Auto-fix invalid options fields
-│   └── sanitizer.ts     # Name/ID generation (from useCanvasOperations.ts)
-├── utils/
-│   ├── input-reader.ts  # File/URL/stdin handling
-│   └── output.ts        # Formatted output
-├── index.ts             # Public API
-└── cli.ts               # CLI entry point
-```
+```typescript
+import { validateWorkflowStructure, jsonParse } from 'n8n-workflow-validator';
 
-## Dependencies
+const raw = fs.readFileSync('workflow.json', 'utf8');
+const workflow = jsonParse(raw);
+const result = validateWorkflowStructure(workflow, { rawSource: raw });
 
-- `esprima-next` - Parse JavaScript object literals
-- `jsonrepair` - Repair malformed JSON
-
-No n8n dependencies - fully standalone.
-
-## Example
-
-```bash
-$ node dist/cli.js workflow.json --fix
-
-✅ VALID: workflow.json
-  🔧 Fixed 4 issue(s)
-  Warnings:
-    - Fixed node "check-document-exists": Removed invalid empty 'options' field
-    - Fixed node "check-status-pending": Removed invalid empty 'options' field
-    - Fixed node "route-by-format": Removed invalid empty 'options' field
-    - Fixed node "check-processing-success": Removed invalid empty 'options' field
+for (const issue of result.issues) {
+  console.log(`[${issue.code}] ${issue.message}`);
+  console.log(`  Line ${issue.sourceLocation?.line}`);
+  console.log(`  ${issue.context?.n8nError}`);
+}
 ```
 
 ## License
