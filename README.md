@@ -319,11 +319,11 @@ for (const issue of result.issues) {
 npx n8n-workflow-validator workflow.json
 
 # Or install globally
-npm install -g n8n-workflow-validator
+pnpm add -g n8n-workflow-validator
 n8n-validate workflow.json
 
 # Or add to your project
-npm install n8n-workflow-validator
+pnpm add n8n-workflow-validator
 ```
 
 ---
@@ -370,13 +370,12 @@ git clone https://github.com/yigitkonur/n8n-workflow-validator.git
 cd n8n-workflow-validator
 
 # Install
-npm install
-
+pnpm install
 # Build
-npm run build
+pnpm build
 
 # Test
-npm test
+pnpm test
 ```
 
 ---

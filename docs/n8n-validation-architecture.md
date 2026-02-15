@@ -147,7 +147,7 @@ The `version` key inside `conditions.options` may cause issues depending on n8n 
 
 ### Option A: Use n8n's workflow package directly
 ```bash
-npm install n8n-workflow
+pnpm add n8n-workflow
 ```
 Then import and use `NodeHelpers.getNodeParameters()` with node type definitions.
 
